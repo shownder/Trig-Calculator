@@ -11,7 +11,8 @@ local storyboard = require( "storyboard" )
 local scene = storyboard.newScene()
 local widget = require( "widget" )
 
-local answer, backButt, scrollView, answerX, answerY, diamlocal back, numY
+local answer, backButt, scrollView, answerX, answerY, diam, emailButt, maskBack
+local back, numY
 local bolt, boltCenterX, boltCenterY, line1, line2, goBack2
 
 --Listeners
@@ -27,12 +28,43 @@ local function onKeyEvent( event )
   end
   return true
 end
-local function goBack( event )
+
+local function catchStrays(event)
+   return true
+end
+
+local function emailPush( event )
+	if event.phase == "ended" then
+    
+    local text = ""
+    
+    for i = 0, #answer, 1 do
+      text = text..answer[i].."\n"
+    end
+    
+    print(text)
+        
+    local options = {
+      
+      to = "",
+      subject = "Bolt Circle Answer",
+      body = "Here is the list of coordinates: \n"..text      
+      }
+		
+		native.showPopup("mail", options)
+		return true
+	end
+end
+
+local function goBack( event )
 	if event.phase == "ended" then
 		
-		storyboard.hideOverlay(true, "slideUp", 300 )		
+		storyboard.hideOverlay(true, "slideRight", 300 )
+		
 	end
-end	local function scrollListener( event )
+end
+
+	local function scrollListener( event )
 		local phase = event.phase
 		local direction = event.direction
 		
@@ -69,39 +101,60 @@ function scene:createScene( event )
   answerX = storyboard.answerX
   answerY = storyboard.answerY
   diam = storyboard.diam
-  local textOptionsL = {parent = screenGroup, text="", x=0, y=0, width=250, height=0, fontSize=15, align="left"}		back = display.newImageRect ( screenGroup, "backgrounds/boltanswer.png",  570, 360 )
-	back.x = display.contentCenterX
-	back.y = display.contentCenterY		
+  local textOptionsL = {parent = screenGroup, text="", x=0, y=0, width=250, height=0, fontSize=15, align="left"}
+  
+  maskBack = display.newImageRect( screenGroup, "backgrounds/maskBack.png", 570, 360 )
+	maskBack.alpha = 0
+	maskBack.x = display.contentCenterX
+	maskBack.y = display.contentCenterY
+	transition.to ( maskBack, { time = 400, alpha = 1, delay = 300} )	
+  maskBack:addEventListener( "tap", catchStrays )
+  maskBack:addEventListener( "touch", catchStrays )
+	backEdgeX = maskBack.contentBounds.xMin
+	backEdgeY = maskBack.contentBounds.yMin
+	
+	back = display.newRect(screenGroup, 0, 0, display.pixelHeight, display.pixelWidth )	
+  back:setFillColor(255, 255, 255)
 	backEdgeX = back.contentBounds.xMin
 	backEdgeY = back.contentBounds.yMin
   
-  numY = backEdgeY + 50		backButt = widget.newButton {		left = 0,
-		top = 0,
-		width = 65,
-		height = 35,
-		label = "BACK",
-		id = "backButt",
-		onEvent = goBack
-		}	screenGroup:insert(backButt)	backButt.x = backEdgeX + 480	backButt.y = backEdgeY + 60
+  numY = backEdgeY + 10
   
-  boltCenterX = backEdgeX + 400
+  boltCenterX = backEdgeX + 360
   boltCenterY = backEdgeY + 180
   bolt = display.newCircle(screenGroup, boltCenterX, boltCenterY, 98)
   bolt:setFillColor(0, 0, 0, 0)
   bolt.strokeWidth = 2
-  bolt:setStrokeColor(255, 255, 255)		if #answer > 7 then		scrollView = widget.newScrollView{			left = 0,
-			top = 0,
+  bolt:setStrokeColor(0, 0, 0)
+	
+	if #answer > 7 then
+		scrollView = widget.newScrollView{
+			left = 0,
+			top = 50,
 			width = 240,
-			height = 315,
+			height = 265,
 			id = "answerScroll",
-			hideBackground = true,
+			hideBackground = false,
 			horizontalScrollingDisabled = true,
 			verticalScrollingDisabled = false,
-			listener = scrollListener,				}		screenGroup:insert(scrollView)	end		for i = 0, #answer, 1 do	
+      isBounceEnabled = false,
+			listener = scrollListener,		
+		}
+		screenGroup:insert(scrollView)
+	end
+	
+	for i = 0, #answer, 1 do	
 		local temp = display.newText( textOptionsL )
     temp:setTextColor(0,0,0)
-    temp.text = answer[i]		temp.y = backEdgeY + numY		temp.x = backEdgeX + 180				if #answer > 7 then			scrollView:insert(temp)		end
-    		numY = numY + 30
+    temp.text = answer[i]
+		temp.y = backEdgeY + numY
+		temp.x = backEdgeX + 140
+		
+		if #answer > 7 then
+			scrollView:insert(temp)
+		end
+    
+		numY = numY + 30
 	end
   
   for i = 0, #answer, 1 do
@@ -121,13 +174,31 @@ function scene:createScene( event )
     if i == 0 then
       temp:setStrokeColor(128, 0, 0)
     else
-      temp:setStrokeColor(255, 255, 255)
+      temp:setStrokeColor(0, 0, 0)
     end
   end
   
   line1 = display.newLine(screenGroup, boltCenterX - 110, boltCenterY, boltCenterX + 110, boltCenterY)
   line2 = display.newLine(screenGroup, boltCenterX, boltCenterY - 110, boltCenterX, boltCenterY + 110)
   
+  topBar = display.newRect( screenGroup, 0, 0, display.pixelHeight, 50 )	
+  topBar:setFillColor(39, 102, 186)
+
+  backButt = display.newImageRect(screenGroup, "Images/backButt.png", 54, 22)
+  backButt:setReferencePoint(display.TopLeftReferencePoint)
+  backButt:addEventListener("touch", goBack)
+  backButt.isHitTestable = true
+  backButt.x = 10
+  backButt.y = 15
+  
+  emailButt = display.newImageRect(screenGroup, "Images/email.png", 40, 23)
+  emailButt.x = display.contentWidth - 20
+  print(display.pixelHeight)
+  print(display.pixelWidth)
+  emailButt.y = 26
+  emailButt:addEventListener("touch", emailPush)
+  emailButt.isHitTestable = true
+  print(topBar.contentBounds.xMax)
 	
 end
 
