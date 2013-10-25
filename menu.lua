@@ -28,6 +28,7 @@ local obliqueButt
 local sineButt
 local boltButt
 local speedButt
+local storeButt
 local timesOpen
 
 local back
@@ -40,15 +41,17 @@ local function sceneSelect ( event )
 
    if "ended" == phase then
    	if event.target.num == 1 then
-		storyboard.gotoScene( "rightAngle", { effect="slideLeft", time=800} )
+			storyboard.gotoScene( "rightAngle", { effect="slideLeft", time=800} )
 		elseif event.target.num == 2 then
-		storyboard.gotoScene( "oblique", { effect="slideLeft", time=800} )
+			storyboard.gotoScene( "oblique", { effect="slideLeft", time=800} )
 		elseif event.target.num == 3 then
-		storyboard.gotoScene( "sineBar", { effect="slideLeft", time=800} )
+			storyboard.gotoScene( "sineBar", { effect="slideLeft", time=800} )
 		elseif event.target.num == 4 then
-		storyboard.gotoScene( "speedFeed", { effect="slideLeft", time=800} )
+			storyboard.gotoScene( "speedFeed", { effect="slideLeft", time=800} )
 		elseif event.target.num == 5 then
-		storyboard.gotoScene( "bolt", { effect="slideLeft", time=800} )
+			storyboard.gotoScene( "bolt", { effect="slideLeft", time=800} )
+		elseif event.target.num == 6 then
+			storyboard.gotoScene( "storePage", { effect="slideLeft", time=800} )
    	end
    end
 end
@@ -102,7 +105,6 @@ function scene:createScene( event )
   end
     
   print("Times Opened "..timesOpen.opened)
-  print("this is a \n new line")
   	
 	back = display.newImageRect ( screenGroup, "backgrounds/menuBack.png",  570, 360 )
 	back.x = display.contentCenterX
@@ -198,6 +200,27 @@ function scene:createScene( event )
 	screenGroup:insert(boltButt)
 	boltButt.x = backEdgeX + 430
 	boltButt.y = backEdgeY + 300
+
+	storeButt = widget.newButton
+	{
+		left = 0,
+		top = 0,
+		width = 180,
+		height = 50,
+    --font = "BadBlocksTT",
+    fontSize = 16,
+		id = "storeButt",
+		label = "More Funtions",
+		onRelease = sceneSelect,		
+		}
+	storeButt.num = 6
+	screenGroup:insert(storeButt)
+	storeButt.x = backEdgeX + 150
+	storeButt.y = backEdgeY + 300
+
+	sineButt.alpha = 0
+	speedButt.alpha = 0
+	boltButt.alpha = 0
 		
 
 end
