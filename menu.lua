@@ -220,7 +220,7 @@ function scene:createScene( event )
 
 	sineButt.alpha = 0
 	speedButt.alpha = 0
-	boltButt.alpha = 0
+	boltButt.alpha = 1
 		
 
 end
