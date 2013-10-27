@@ -210,7 +210,7 @@ function scene:createScene( event )
     --font = "BadBlocksTT",
     fontSize = 16,
 		id = "storeButt",
-		label = "More Funtions",
+		label = "Add Funtions",
 		onRelease = sceneSelect,		
 		}
 	storeButt.num = 6
@@ -220,7 +220,7 @@ function scene:createScene( event )
 
 	sineButt.alpha = 0
 	speedButt.alpha = 0
-	boltButt.alpha = 1
+	boltButt.alpha = 0
 		
 
 end

@@ -25,6 +25,22 @@ local function onKeyEvent( event )
    return true
 end
 
+local function goBack( event )
+  if event.phase == "ended" then
+    
+    storyboard.gotoScene( "menu", { effect="slideRight", time=800})
+    
+  end
+end
+
+local function restorePurchases( event )
+  if event.phase == "ended" then
+    
+    print("Restore all purchases")
+    
+  end
+end
+
 local function descSelect ( event )
   local phase = event.phase 
    if "ended" == phase then
@@ -72,7 +88,7 @@ local function descSelect ( event )
         speedButt.pressed = false
       else
         --Handle Purchase here
-        print("Purchasing SineBar")
+        print("Purchasing Bolt Circle")
       end
     end
 
@@ -97,32 +113,33 @@ function scene:createScene( event )
 
   optionsBack = display.newRect(screenGroup, 0, 0, display.contentWidth/3, 365)
   optionsBack:setFillColor(255, 255, 255)
-  optionsBack:setReferencePoint(display.TopLeftReferencePoint)
-  optionsBack.x = 0
+  optionsBack:setReferencePoint(display.TopRightReferencePoint)
+  optionsBack.x = display.actualContentHeight
   optionsBack.y = 0
 
   local options = {text="", x=0, y=0, width=300, align="left", font="BerlinSansFB-Reg", fontSize=18}
 
-  title = display.newEmbossedText( screenGroup, "Function Store", 5, 5, 150, 100, "BerlinSansFB-Reg", 28 )
-  title:setTextColor(39, 102, 186, 200)
-  title:setEmbossColor({highlight = {r=0, g=0, b=0, a=200}, shadow = {r=0,g=0,b=0, a=0}})
+  title = display.newText( screenGroup, "Function Store", 0, 5, 150, 100, "BerlinSansFB-Reg", 28 )
+  title:setTextColor(35, 87, 157)
+  --title:setEmbossColor({highlight = {r=0, g=0, b=0, a=200}, shadow = {r=0,g=0,b=0, a=0}})
+  title.x = display.actualContentHeight-60
 
   sineButt = widget.newButton
   {
     id = "sineButt",
     width = 125,
     label = "Sine Bar",
-    labelColor = { default = {39, 102, 186, 200}, over = {255, 255, 255}},
+    labelColor = { default = {255, 255, 255}, over = {39, 102, 186, 200}},
     font = "BerlinSansFB-Reg",
     fontSize = 20,
-    defaultFile = "Images/button.png",
-    overFile = "Images/buttonOver.png",
+    defaultFile = "Images/buttonOver.png",
+    overFile = "Images/button.png",
     onRelease = descSelect,    
     }
   sineButt.num = 1
   sineButt.pressed = false
   screenGroup:insert(sineButt)
-  sineButt.x = 85
+  sineButt.x = display.actualContentHeight-85
   sineButt.y = 110
 
   speedButt = widget.newButton
@@ -130,17 +147,17 @@ function scene:createScene( event )
     id = "speedButt",
     width = 125,
     label = "Speeds & Feeds",
-    labelColor = { default = {39, 102, 186, 200}, over = {255, 255, 255}},
+    labelColor = { default = {255, 255, 255}, over = {39, 102, 186, 200}},
     font = "BerlinSansFB-Reg",
     fontSize = 16,
-    defaultFile = "Images/button.png",
-    overFile = "Images/buttonOver.png",
+    defaultFile = "Images/buttonOver.png",
+    overFile = "Images/button.png",
     onRelease = descSelect,    
     }
   speedButt.num = 2
   speedButt.pressed = false
   screenGroup:insert(speedButt)
-  speedButt.x = 85
+  speedButt.x = display.actualContentHeight-85
   speedButt.y = 170
 
   boltButt = widget.newButton
@@ -148,52 +165,77 @@ function scene:createScene( event )
     id = "boltButt",
     width = 125,
     label = "Bolt Circle",
-    labelColor = { default = {39, 102, 186, 200}, over = {255, 255, 255}},
+    labelColor = { default = {255, 255, 255}, over = {39, 102, 186, 200}},
     font = "BerlinSansFB-Reg",
     fontSize = 20,
-    defaultFile = "Images/button.png",
-    overFile = "Images/buttonOver.png",
+    defaultFile = "Images/buttonOver.png",
+    overFile = "Images/button.png",
     onRelease = descSelect,    
     }
   boltButt.num = 3
   boltButt.pressed = false
   screenGroup:insert(boltButt)
-  boltButt.x = 85
+  boltButt.x = display.actualContentHeight-85
   boltButt.y = 230
 
+  restoreButt = widget.newButton
+  {
+    id = "restoreButt",
+    width = 125,
+    label = "Restore",
+    labelColor = { default = {255,255,255}, over = {198,68,68}},
+    font = "BerlinSansFB-Reg",
+    fontSize = 20,
+    defaultFile = "Images/restoreButtOver.png",
+    overFile = "Images/restoreButt.png",
+    onRelease = restorePurchases,    
+    }
+  restoreButt.num = 3
+  restoreButt.pressed = false
+  screenGroup:insert(restoreButt)
+  restoreButt.x = display.actualContentHeight-85
+  restoreButt.y = 290
+
+  backButt = display.newImageRect(screenGroup, "Images/backButt.png", 54, 22)
+  backButt:setReferencePoint(display.TopLeftReferencePoint)
+  backButt:addEventListener("touch", goBack)
+  backButt.isHitTestable = true
+  backButt.x = 10
+  backButt.y = 10
+
   sineDesc = display.newImageRect( sineGroup, "backgrounds/sineDesc.png", 285, 180 )
-  sineDesc.x = backEdgeX + 320
-  sineDesc.y = backEdgeY + 100
+  sineDesc.x = 200
+  sineDesc.y = 115
 
   sineText = display.newText( options )
   sineGroup:insert(sineText)
   sineText.text = "Sine Description goes here. Sine Description goes here. Sine Description goes here. Sine Description goes here. "
-  sineText.x = backEdgeX + 380
-  sineText.y = backEdgeY + 230
+  sineText.x = 200
+  sineText.y = 230
 
   sineGroup.alpha = 0
 
   speedDesc = display.newImageRect( speedGroup, "backgrounds/speedDesc.png", 285, 180 )
-  speedDesc.x = backEdgeX + 320
-  speedDesc.y = backEdgeY + 100
+  speedDesc.x = 200
+  speedDesc.y = 115
 
   speedText = display.newText( options )
   speedGroup:insert(speedText)
   speedText.text = "Sine Description goes here. Sine Description goes here. Sine Description goes here. Sine Description goes here. "
-  speedText.x = backEdgeX + 380
-  speedText.y = backEdgeY + 230
+  speedText.x = 200
+  speedText.y = 230
 
   speedGroup.alpha = 0
 
   boltDesc = display.newImageRect( boltGroup, "backgrounds/boltDesc.png", 285, 180 )
-  boltDesc.x = backEdgeX + 320
-  boltDesc.y = backEdgeY + 110
+  boltDesc.x = 200
+  boltDesc.y = 115
 
   boltText = display.newText( options )
   boltGroup:insert(boltText)
   boltText.text = "Sine Description goes here. Sine Description goes here. Sine Description goes here. Sine Description goes here. "
-  boltText.x = backEdgeX + 380
-  boltText.y = backEdgeY + 230
+  boltText.x = 200
+  boltText.y = 240
 
   boltGroup.alpha = 0
 
