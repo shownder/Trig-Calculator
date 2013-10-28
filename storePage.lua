@@ -6,12 +6,14 @@ local loadsave = require ("loadsave")
 
 local back
 
-local mySettings, restoring
-local sineButt, speedButt, boltButt, buyButt, restoreButt, backButt
+local storeSettings, restoring
+local sineButt, speedButt, boltButt, restoreButt, backButt
+local sineBuy, speedBuy, boltBuy
 local sineText, speedText, boltText
 local sineDesc, speedDesc, boltDesc
 local backEdgeX, backEdgeY, optionsBack
 local sineGroup, speedGroup, boltGroup
+local whichOne
 
 local function onKeyEvent( event )
 
@@ -25,6 +27,60 @@ local function onKeyEvent( event )
    return true
 end
 
+local function transactionCallback( event )
+
+   print("In transactionCallback", event.transaction.state)
+   local transaction = event.transaction
+   local tstate = event.transaction.state
+   local product = transaction.productIdentidier
+
+   if tstate == "purchased" then
+      print("Transaction succuessful!")
+      if whichOne[1] ==  product then
+        storeSettings.sinePaid = true
+      elseif whichOne[2] ==  product then
+        storeSettings.speedPaid = true
+      elseif whichOne[3] ==  product then
+        storeSettings.boltPaid = true
+      end
+      utility.saveTable(storeSettings, "store.json")
+      native.showAlert("Success", "Function now be unlocked!", {"Okay"})
+      store.finishTransaction( transaction )
+   elseif  tstate == "restored" then
+      print("Transaction restored (from previous session)")
+      if whichOne[1] ==  product then
+        storeSettings.sinePaid = true end
+      if whichOne[2] ==  product then
+        storeSettings.speedPaid = true end
+      if whichOne[3] ==  product then
+        storeSettings.boltPaid = true end
+      utility.saveTable(storeSettings, "store.json")
+      store.finishTransaction( transaction )
+   elseif tstate == "refunded" then
+      print("User requested a refund -- locking app back")
+      if whichOne[1] ==  product then
+        storeSettings.sinePaid = false
+      elseif whichOne[2] ==  product then
+        storeSettings.speedPaid = false
+      elseif whichOne[3] ==  product then
+        storeSettings.boltPaid = false
+      end
+      utility.saveTable(storeSettings, "store.json")
+      store.finishTransaction( transaction )
+   elseif tstate == "cancelled" then
+      print("User cancelled transaction")
+      store.finishTransaction( transaction )
+   elseif tstate == "failed" then
+      print("Transaction failed, type:", transaction.errorType, transaction.errorString)
+      store.finishTransaction( transaction )
+   else
+      print("unknown event")
+      store.finishTransaction( transaction )
+   end
+
+   print("done with store business for now")
+end
+
 local function goBack( event )
   if event.phase == "ended" then
     
@@ -33,10 +89,28 @@ local function goBack( event )
   end
 end
 
+local function purchase( event )
+  if event.phase == "ended" then
+    
+    if event.target.num == 1 then
+      print("Purchase Sine")
+      store.purchase({"sine product Identifier"})
+    elseif event.target.num == 2 then
+      print("Purchase Speed")
+      store.purchase({"speed product Identifier"})
+    elseif event.target.num == 3 then
+      print("Purchase Bolt")
+      store.purchase({"bolt product Identifier"})
+    end
+    
+  end
+end
+
 local function restorePurchases( event )
   if event.phase == "ended" then
     
     print("Restore all purchases")
+    store.restore()
     
   end
 end
@@ -46,50 +120,32 @@ local function descSelect ( event )
    if "ended" == phase then
 
     if event.target.num == 1 then
-      if event.target.pressed == false then
         sineGroup.alpha = 1
         speedGroup.alpha = 0
         boltGroup.alpha = 0
-        sineButt:setLabel("Purchase")
-        sineButt.pressed = true
-        speedButt:setLabel("Speeds & Feeds")
-        speedButt.pressed = false
-        boltButt:setLabel("Bolt Circle")
-        boltButt.pressed = false
-      else
-        --Handle Purchase here
-        print("Purchasing SineBar")
-      end
+
+        sineButt.alpha = 0
+        sineBuy.alpha = 1
+        speedButt.alpha = 1
+        boltButt.alpha = 1
     elseif event.target.num == 2 then
-      if event.target.pressed == false then
         speedGroup.alpha = 1
         sineGroup.alpha = 0
         boltGroup.alpha = 0
-        speedButt:setLabel("Purchase")
-        speedButt.pressed = true
-        sineButt:setLabel("Sine Bar")
-        sineButt.pressed = false
-        boltButt:setLabel("Bolt Circle")
-        boltButt.pressed = false
-      else
-        --Handle Purchase here
-        print("Purchasing Speeds & Feeds")
-      end
+
+        speedButt.alpha = 0
+        speedBuy.alpha = 1
+        sineButt.alpha = 1
+        boltButt.alpha = 1
     elseif event.target.num == 3 then
-      if event.target.pressed == false then
         boltGroup.alpha = 1
         sineGroup.alpha = 0
         speedGroup.alpha = 0
-        boltButt:setLabel("Purchase")
-        boltButt.pressed = true
-        sineButt:setLabel("Sine Bar")
-        sineButt.pressed = false
-        speedButt:setLabel("Speeds & Feeds")
-        speedButt.pressed = false
-      else
-        --Handle Purchase here
-        print("Purchasing Bolt Circle")
-      end
+        
+        boltButt.alpha = 0
+        boltBuy.alpha = 1
+        sineButt.alpha = 1
+        speedButt.alpha = 1
     end
 
    end
@@ -100,6 +156,20 @@ function scene:createScene( event )
 	local screenGroup = self.view
 
 	Runtime:addEventListener( "key", onKeyEvent )
+
+  storeSettings = loadsave.loadTable("store.json")
+
+  if store.availableStores.apple then
+      timer.performWithDelay(1000, function() store.init( "apple", transactionCallback); end)
+  end
+  if store.availableStores.google then
+      timer.performWithDelay( 1000, function() store.init( "google", transactionCallback ); end)
+  end
+
+  whichOne = {}
+  whichOne[1] = "sine Product Identifier"
+  whichOne[2] = "speed Product Identifier"
+  whichOne[3] = "bolt Product Identifier"
 
   sineGroup = display.newGroup ( )
   speedGroup = display.newGroup ( )
@@ -137,10 +207,27 @@ function scene:createScene( event )
     onRelease = descSelect,    
     }
   sineButt.num = 1
-  sineButt.pressed = false
   screenGroup:insert(sineButt)
   sineButt.x = display.actualContentHeight-85
   sineButt.y = 110
+
+  sineBuy = widget.newButton
+  {
+    id = "sineBuy",
+    width = 125,
+    label = "Buy",
+    labelColor = { default = {255, 255, 255}, over = {19, 124, 21}},
+    font = "BerlinSansFB-Reg",
+    fontSize = 16,
+    defaultFile = "Images/buyOver.png",
+    overFile = "Images/buy.png",
+    onRelease = purchase,    
+    }
+  sineBuy.num = 1
+  sineGroup:insert(sineBuy)
+  sineBuy.x = display.actualContentHeight-85
+  sineBuy.y = 110
+  sineBuy.alpha = 0
 
   speedButt = widget.newButton
   {
@@ -155,10 +242,27 @@ function scene:createScene( event )
     onRelease = descSelect,    
     }
   speedButt.num = 2
-  speedButt.pressed = false
   screenGroup:insert(speedButt)
   speedButt.x = display.actualContentHeight-85
   speedButt.y = 170
+
+  speedBuy = widget.newButton
+  {
+    id = "speedBuy",
+    width = 125,
+    label = "Buy",
+    labelColor = { default = {255, 255, 255}, over = {19, 124, 21}},
+    font = "BerlinSansFB-Reg",
+    fontSize = 16,
+    defaultFile = "Images/buyOver.png",
+    overFile = "Images/buy.png",
+    onRelease = purchase,    
+    }
+  speedBuy.num = 2
+  speedGroup:insert(speedBuy)
+  speedBuy.x = display.actualContentHeight-85
+  speedBuy.y = 170
+  speedBuy.alpha = 0
 
   boltButt = widget.newButton
   {
@@ -173,10 +277,27 @@ function scene:createScene( event )
     onRelease = descSelect,    
     }
   boltButt.num = 3
-  boltButt.pressed = false
   screenGroup:insert(boltButt)
   boltButt.x = display.actualContentHeight-85
   boltButt.y = 230
+
+  boltBuy = widget.newButton
+  {
+    id = "boltBuy",
+    width = 125,
+    label = "Buy",
+    labelColor = { default = {255, 255, 255}, over = {19, 124, 21}},
+    font = "BerlinSansFB-Reg",
+    fontSize = 16,
+    defaultFile = "Images/buyOver.png",
+    overFile = "Images/buy.png",
+    onRelease = purchase,    
+    }
+  boltBuy.num = 1
+  boltGroup:insert(boltBuy)
+  boltBuy.x = display.actualContentHeight-85
+  boltBuy.y = 230
+  boltBuy.alpha = 0
 
   restoreButt = widget.newButton
   {

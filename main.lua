@@ -32,7 +32,7 @@ local function licensingListener( event )
    local verified = event.isVerified
    if not event.isVerified then
       --failed verify app from the play store, we print a message
-      native.showAlert ( "Not Authorized", "The app was not purchased from Google Play.", { "Close" }, alertListener)
+      native.showAlert ( "Not Authorized", "Cannot authorize from Google Play.", { "Close" }, alertListener)
    end
 end
 

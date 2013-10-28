@@ -30,7 +30,7 @@ local boltButt
 local speedButt
 local storeButt
 local timesOpen
-
+local storeSettings
 local back
 
 
@@ -99,6 +99,14 @@ function scene:createScene( event )
 	local screenGroup = self.view
 
   timesOpen = loadsave.loadTable("timesOpen.json")
+  storeSettings = loadsave.loadTable("store.json")
+  if storeSettings == nil then
+    storeSettings = {}
+    storeSettings.sinePaid = false
+    storeSettings.speedPaid = false
+    storeSettings.boltPaid = false
+    loadsave.saveTable(storeSettings, "store.json")
+  end
   
   if timesOpen.opened == 5 then
     native.showAlert ( "Rate Us? We appreciate your feedback!", "Help Us Improve by leaving a review.", { "Never", "Later", "OK" }, alertListener )
@@ -218,10 +226,23 @@ function scene:createScene( event )
 	storeButt.x = backEdgeX + 150
 	storeButt.y = backEdgeY + 300
 
-	sineButt.alpha = 0
-	speedButt.alpha = 0
-	boltButt.alpha = 0
-		
+	if storeSettings.sinePaid then
+		sineButt.alpha = 1
+	else
+		sineButt.alpha = 0
+	end
+
+	if storeSettings.speedPaid then
+		speedButt.alpha = 1
+	else
+		speedButt.alpha = 0
+	end
+
+	if storeSettings.boltPaid then
+		boltButt.alpha = 1
+	else
+		boltButt.alpha = 0
+	end		
 
 end
 
