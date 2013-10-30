@@ -150,8 +150,12 @@ local function descSelect ( event )
 
         sineButt.alpha = 0
         sineBuy.alpha = 1
-        speedButt.alpha = 1
-        boltButt.alpha = 1
+        if not storeSettings.speedPaid then 
+          speedButt.alpha = 1
+        end
+        if not storeSettings.boltPaid then
+          boltButt.alpha = 1
+        end
     elseif event.target.num == 2 then
         speedGroup.alpha = 1
         sineGroup.alpha = 0
@@ -159,8 +163,12 @@ local function descSelect ( event )
 
         speedButt.alpha = 0
         speedBuy.alpha = 1
-        sineButt.alpha = 1
-        boltButt.alpha = 1
+        if not storeSettings.sinePaid then 
+          sineButt.alpha = 1
+        end
+        if not storeSettings.boltPaid then
+          boltButt.alpha = 1
+        end
     elseif event.target.num == 3 then
         boltGroup.alpha = 1
         sineGroup.alpha = 0
@@ -168,8 +176,12 @@ local function descSelect ( event )
         
         boltButt.alpha = 0
         boltBuy.alpha = 1
-        sineButt.alpha = 1
-        speedButt.alpha = 1
+        if not storeSettings.speedPaid then 
+          speedButt.alpha = 1
+        end
+        if not storeSettings.sinePaid then
+          sineButt.alpha = 1
+        end
     end
 
    end
@@ -391,33 +403,24 @@ function scene:createScene( event )
   screenGroup:insert(boltGroup)
 
   if storeSettings.sinePaid then
-    sineBuy.alpha = 0.50
-    sineBuy:setEnabled(false)
-  elseif not storeSettings.sinePaid then
-    sineBuy.alpha = 1
-    sineBuy:setEnabled(true)
+    sineButt.alpha = 0.50
+    sineButt:setEnabled(false)
   end
 
   if storeSettings.speedPaid then
-    speedBuy.alpha = 0.50
-    speedBuy:setEnabled(false)
-  elseif not storeSettings.sinePaid then
-    speedBuy.alpha = 1
-    speedBuy:setEnabled(true)
+    speedButt.alpha = 0.50
+    speedButt:setEnabled(false)
   end
 
   if storeSettings.boltPaid then
-    boltBuy.alpha = 0.50
-    boltBuy:setEnabled(false)
-  elseif not storeSettings.sinePaid then
-    boltBuy.alpha = 1
-    boltBuy:setEnabled(true)
+    boltButt.alpha = 0.50
+    boltButt:setEnabled(false)
   end
 
   if not storeSettings.sinePaid and not storeSettings.speedPaid and not storeSettings.boltPaid then
     restoreButt.alpha = 1
   else
-    restoreButt.slpha = 0
+    restoreButt.alpha = 0
   end
 
 end
