@@ -100,14 +100,18 @@ function scene:createScene( event )
 
   timesOpen = loadsave.loadTable("timesOpen.json")
   storeSettings = loadsave.loadTable("store.json")
-  if storeSettings == nil then
+  if (loadsave.loadTable("store.json") == nil) then
     storeSettings = {}
     storeSettings.sinePaid = false
     storeSettings.speedPaid = false
     storeSettings.boltPaid = false
     loadsave.saveTable(storeSettings, "store.json")
   end
-  
+    -- storeSettings.sinePaid = false
+    -- storeSettings.speedPaid = false
+    -- storeSettings.boltPaid = false
+    -- loadsave.saveTable(storeSettings, "store.json")
+
   if timesOpen.opened == 5 then
     native.showAlert ( "Rate Us? We appreciate your feedback!", "Help Us Improve by leaving a review.", { "Never", "Later", "OK" }, alertListener )
   end
@@ -218,7 +222,7 @@ function scene:createScene( event )
     --font = "BadBlocksTT",
     fontSize = 16,
 		id = "storeButt",
-		label = "Add Funtions",
+		label = "Unlock Functions",
 		onRelease = sceneSelect,		
 		}
 	storeButt.num = 6
@@ -228,21 +232,32 @@ function scene:createScene( event )
 
 	if storeSettings.sinePaid then
 		sineButt.alpha = 1
+		sineButt:setEnabled(true)
 	else
-		sineButt.alpha = 0
+		sineButt.alpha = 0.50
+		sineButt:setEnabled(false)
 	end
 
 	if storeSettings.speedPaid then
 		speedButt.alpha = 1
+		speedButt:setEnabled(true)
 	else
-		speedButt.alpha = 0
+		speedButt.alpha = 0.50
+		speedButt:setEnabled(false)
 	end
 
 	if storeSettings.boltPaid then
 		boltButt.alpha = 1
+		boltButt:setEnabled(true)
 	else
-		boltButt.alpha = 0
-	end		
+		boltButt.alpha = 0.50
+		boltButt:setEnabled(false)
+	end
+
+	if storeSettings.sinePaid and storeSettings.speedPaid and storeSettings.boltPaid then
+		storeButt.alpha = 0
+	end
+
 
 end
 

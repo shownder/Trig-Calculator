@@ -13,7 +13,7 @@ local sineText, speedText, boltText
 local sineDesc, speedDesc, boltDesc
 local backEdgeX, backEdgeY, optionsBack
 local sineGroup, speedGroup, boltGroup
-local whichOne
+local whichOne, sineSold, speedSold, boltSold
 
 local function onKeyEvent( event )
 
@@ -32,46 +32,67 @@ local function transactionCallback( event )
    print("In transactionCallback", event.transaction.state)
    local transaction = event.transaction
    local tstate = event.transaction.state
-   local product = transaction.productIdentidier
+   local product = event.transaction.productIdentifier
 
    if tstate == "purchased" then
       print("Transaction succuessful!")
-      if whichOne[1] ==  product then
+      if whichOne[1] == product then
         storeSettings.sinePaid = true
-      elseif whichOne[2] ==  product then
+        sineButt.alpha = 0.50
+        sineButt:setEnabled(false)
+        sineBuy.alpha = 0
+      elseif whichOne[2] == product then
         storeSettings.speedPaid = true
-      elseif whichOne[3] ==  product then
+        speedButt.alpha = 0.50
+        speedButt:setEnabled(false)
+        speedBuy.alpha = 0
+      elseif whichOne[3] == product then
         storeSettings.boltPaid = true
+        boltButt.alpha = 0.50
+        boltButt:setEnabled(false)
+        boltBuy.alpha = 0
       end
-      utility.saveTable(storeSettings, "store.json")
-      native.showAlert("Success", "Function now be unlocked!", {"Okay"})
+      loadsave.saveTable(storeSettings, "store.json")
+      --native.showAlert("Success", "Function is now unlocked!", {"Okay"})
       store.finishTransaction( transaction )
    elseif  tstate == "restored" then
       print("Transaction restored (from previous session)")
-      if whichOne[1] ==  product then
-        storeSettings.sinePaid = true end
-      if whichOne[2] ==  product then
-        storeSettings.speedPaid = true end
-      if whichOne[3] ==  product then
-        storeSettings.boltPaid = true end
-      utility.saveTable(storeSettings, "store.json")
+      if whichOne[1] == product then
+        storeSettings.sinePaid = true
+        sineButt.alpha = 0.50
+        sineButt:setEnabled(false)
+        sineBuy.alpha = 0
+      elseif whichOne[2] == product then
+        storeSettings.speedPaid = true
+        speedButt.alpha = 0.50
+        speedButt:setEnabled(false)
+        speedBuy.alpha = 0
+      elseif whichOne[3] == product then
+        storeSettings.boltPaid = true
+        boltButt.alpha = 0.50
+        boltButt:setEnabled(false)
+        boltBuy.alpha = 0
+      end
+      loadsave.saveTable(storeSettings, "store.json")
       store.finishTransaction( transaction )
    elseif tstate == "refunded" then
       print("User requested a refund -- locking app back")
-      if whichOne[1] ==  product then
+      if whichOne[1] == product then
         storeSettings.sinePaid = false
-      elseif whichOne[2] ==  product then
+      elseif whichOne[2] == product then
         storeSettings.speedPaid = false
-      elseif whichOne[3] ==  product then
+      elseif whichOne[3] == product then
         storeSettings.boltPaid = false
       end
-      utility.saveTable(storeSettings, "store.json")
+      loadsave.saveTable(storeSettings, "store.json")
+      native.showAlert("Refund", "Purchase was refunded.", {"Okay"})
       store.finishTransaction( transaction )
    elseif tstate == "cancelled" then
       print("User cancelled transaction")
       store.finishTransaction( transaction )
    elseif tstate == "failed" then
       print("Transaction failed, type:", transaction.errorType, transaction.errorString)
+      --native.showAlert("Failed", transaction.errorType.." - "..transaction.errorString, {"Okay"})
       store.finishTransaction( transaction )
    else
       print("unknown event")
@@ -94,13 +115,16 @@ local function purchase( event )
     
     if event.target.num == 1 then
       print("Purchase Sine")
-      store.purchase({"sine product Identifier"})
+      store.purchase({"com.trigonometry.hilo.sine"})
+      --store.purchase({"android.test.purchased"})
     elseif event.target.num == 2 then
       print("Purchase Speed")
-      store.purchase({"speed product Identifier"})
+      store.purchase({"com.trigonometry.hilo.speed"})
+      --store.purchase({"android.test.canceled"})
     elseif event.target.num == 3 then
       print("Purchase Bolt")
-      store.purchase({"bolt product Identifier"})
+      store.purchase({"com.trigonometry.hilo.bolt"})
+      --store.purchase({"android.test.item_unavailable"})
     end
     
   end
@@ -110,7 +134,7 @@ local function restorePurchases( event )
   if event.phase == "ended" then
     
     print("Restore all purchases")
-    store.restore()
+    store.restore()    
     
   end
 end
@@ -158,7 +182,6 @@ function scene:createScene( event )
 	Runtime:addEventListener( "key", onKeyEvent )
 
   storeSettings = loadsave.loadTable("store.json")
-
   if store.availableStores.apple then
       timer.performWithDelay(1000, function() store.init( "apple", transactionCallback); end)
   end
@@ -167,9 +190,12 @@ function scene:createScene( event )
   end
 
   whichOne = {}
-  whichOne[1] = "sine Product Identifier"
-  whichOne[2] = "speed Product Identifier"
-  whichOne[3] = "bolt Product Identifier"
+  whichOne[1] = "com.trigonometry.hilo.sine"
+  --whichOne[1] = "android.test.purchased"
+  whichOne[2] = "com.trigonometry.hilo.speed"
+  --whichOne[2] = "android.test.canceled"
+  whichOne[3] = "com.trigonometry.hilo.bolt"
+  --whichOne[3] = "android.test.item_unavailable"
 
   sineGroup = display.newGroup ( )
   speedGroup = display.newGroup ( )
@@ -187,7 +213,7 @@ function scene:createScene( event )
   optionsBack.x = display.actualContentHeight
   optionsBack.y = 0
 
-  local options = {text="", x=0, y=0, width=300, align="left", font="BerlinSansFB-Reg", fontSize=18}
+  local options = {text="", x=0, y=0, width=300, align="left", font="BerlinSansFB-Reg", fontSize=16}
 
   title = display.newText( screenGroup, "Function Store", 0, 5, 150, 100, "BerlinSansFB-Reg", 28 )
   title:setTextColor(35, 87, 157)
@@ -293,7 +319,7 @@ function scene:createScene( event )
     overFile = "Images/buy.png",
     onRelease = purchase,    
     }
-  boltBuy.num = 1
+  boltBuy.num = 3
   boltGroup:insert(boltBuy)
   boltBuy.x = display.actualContentHeight-85
   boltBuy.y = 230
@@ -330,7 +356,7 @@ function scene:createScene( event )
 
   sineText = display.newText( options )
   sineGroup:insert(sineText)
-  sineText.text = "Sine Description goes here. Sine Description goes here. Sine Description goes here. Sine Description goes here. "
+  sineText.text = "Quickly and accurately calculate precision block stack or angle for use with sine bars or sine plates. $0.99 USD"
   sineText.x = 200
   sineText.y = 230
 
@@ -342,9 +368,9 @@ function scene:createScene( event )
 
   speedText = display.newText( options )
   speedGroup:insert(speedText)
-  speedText.text = "Sine Description goes here. Sine Description goes here. Sine Description goes here. Sine Description goes here. "
+  speedText.text = "Calculate cutting speeds & feeds for drills, milling cutters, and lathe workpieces. Calculate between RPM and feet or meters per minute, and between feed per rev and feed per minute. $0.99 USD"
   speedText.x = 200
-  speedText.y = 230
+  speedText.y = 245
 
   speedGroup.alpha = 0
 
@@ -354,9 +380,9 @@ function scene:createScene( event )
 
   boltText = display.newText( options )
   boltGroup:insert(boltText)
-  boltText.text = "Sine Description goes here. Sine Description goes here. Sine Description goes here. Sine Description goes here. "
+  boltText.text = "Calculate X-Y coordinates for equally spaced bolts. You can make the center of the circle any coordinate you need, and place the first hole at any angle. $0.99 USD"
   boltText.x = 200
-  boltText.y = 240
+  boltText.y = 245
 
   boltGroup.alpha = 0
 
@@ -364,6 +390,35 @@ function scene:createScene( event )
   screenGroup:insert(speedGroup)
   screenGroup:insert(boltGroup)
 
+  if storeSettings.sinePaid then
+    sineBuy.alpha = 0.50
+    sineBuy:setEnabled(false)
+  elseif not storeSettings.sinePaid then
+    sineBuy.alpha = 1
+    sineBuy:setEnabled(true)
+  end
+
+  if storeSettings.speedPaid then
+    speedBuy.alpha = 0.50
+    speedBuy:setEnabled(false)
+  elseif not storeSettings.sinePaid then
+    speedBuy.alpha = 1
+    speedBuy:setEnabled(true)
+  end
+
+  if storeSettings.boltPaid then
+    boltBuy.alpha = 0.50
+    boltBuy:setEnabled(false)
+  elseif not storeSettings.sinePaid then
+    boltBuy.alpha = 1
+    boltBuy:setEnabled(true)
+  end
+
+  if not storeSettings.sinePaid and not storeSettings.speedPaid and not storeSettings.boltPaid then
+    restoreButt.alpha = 1
+  else
+    restoreButt.slpha = 0
+  end
 
 end
 
