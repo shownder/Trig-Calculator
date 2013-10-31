@@ -115,15 +115,15 @@ local function purchase( event )
     
     if event.target.num == 1 then
       print("Purchase Sine")
-      store.purchase({"com.trigonometry.hilo.sine"})
+      store.purchase({"com.trigonometry.iap.sine"})
       --store.purchase({"android.test.purchased"})
     elseif event.target.num == 2 then
       print("Purchase Speed")
-      store.purchase({"com.trigonometry.hilo.speed"})
+      store.purchase({"com.trigonometry.iap.speed"})
       --store.purchase({"android.test.canceled"})
     elseif event.target.num == 3 then
       print("Purchase Bolt")
-      store.purchase({"com.trigonometry.hilo.bolt"})
+      store.purchase({"com.trigonometry.iap.bolt"})
       --store.purchase({"android.test.item_unavailable"})
     end
     
@@ -202,11 +202,11 @@ function scene:createScene( event )
   end
 
   whichOne = {}
-  whichOne[1] = "com.trigonometry.hilo.sine"
+  whichOne[1] = "com.trigonometry.iap.sine"
   --whichOne[1] = "android.test.purchased"
-  whichOne[2] = "com.trigonometry.hilo.speed"
+  whichOne[2] = "com.trigonometry.iap.speed"
   --whichOne[2] = "android.test.canceled"
-  whichOne[3] = "com.trigonometry.hilo.bolt"
+  whichOne[3] = "com.trigonometry.iap.bolt"
   --whichOne[3] = "android.test.item_unavailable"
 
   sineGroup = display.newGroup ( )
