@@ -217,7 +217,7 @@ end
 
 local function transactionCallback( event )
 
-   print("In transactionCallback", event.transaction.state)
+   print("In transactionCallback", event.transaction.state .. " " .. event.transaction.productIdentifier)
    local transaction = event.transaction
    local tstate = event.transaction.state
    local product = event.transaction.productIdentifier
@@ -228,12 +228,14 @@ local function transactionCallback( event )
 
    if  tstate == "restored" then
       storeSettings.buyCount = storeSettings.buyCount + 1
-      print("Transaction restored (from previous session)")
       if "com.trigonometry.iap.sine" == product then
+        print("Transaction restored: Sine")
         storeSettings.sinePaid = true
       elseif "com.trigonometry.iap.speed" == product then
+        print("Transaction restored: Speed")
         storeSettings.speedPaid = true
       elseif "com.trigonometry.iap.bolt" == product then
+        print("Transaction restored: Bolt")
         storeSettings.boltPaid = true
       end
       loadsave.saveTable(storeSettings, "store.json")
@@ -431,7 +433,7 @@ function scene:create( event )
   facebookButt.y = logo.y * 2
   facebookButt:addEventListener ( "touch", goingFacebook )
   
-  print(storeSettings.buyCount)
+  print("Buy Count:" .. storeSettings.buyCount)
   
   if device.isApple and storeSettings.buyCount < 1 then
     restoreBut = display.newImageRect(sceneGroup, "Images/restoreBut.png", 42, 42)
