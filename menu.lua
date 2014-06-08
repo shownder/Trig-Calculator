@@ -243,7 +243,7 @@ local function transactionCallback( event )
         timer.performWithDelay(1500, function() composer.gotoScene( "restorePage", { effect="fade", time=100} ); end)
        end
       store.finishTransaction( transaction )
-   elseif tstate == "refunded" then
+   elseif tstate == "refunded" or tstate == "revoked" then
       print("User requested a refund -- locking app back")
       if "com.trigonometry.iap.sine" == product then
         storeSettings.sinePaid = false
@@ -400,7 +400,7 @@ function scene:create( event )
   end
   
 --  storeSettings.sinePaid = true
---  storeSettings.trigPaid = true
+--  storeSettings.speedPaid = true
 --  storeSettings.boltPaid = true
   
   going = {}
@@ -448,8 +448,14 @@ function scene:create( event )
     restoreLabel.x = restoreBut.x + 21
     restoreLabel.y = restoreBut.y + 40
     restoreLabel:setFillColor(0.608, 0, 0, 0.6)
-  else
-    if store.availableStores.google then
+  else 
+    if system.getInfo("targetAppStore") == "amazon" then
+      store = require "plugin.amazon.iap"
+      store.init( transactionCallback )
+      print("The currently logged in user is: ", store.getUserId())
+      store.restore()
+      timer.performWithDelay( 1500, googleRefund)
+    elseif store.availableStores.google then
       store.init( "google", transactionCallback )
       timer.performWithDelay( 300, store.restore)
       timer.performWithDelay( 1500, googleRefund)

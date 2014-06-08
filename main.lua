@@ -32,7 +32,6 @@ local function alertListener ( event )
 end
 
 local function licensingListener( event )
-
    local verified = event.isVerified
    if not event.isVerified then
       --failed verify app from the play store, we print a message

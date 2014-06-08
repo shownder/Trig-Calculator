@@ -1,5 +1,13 @@
 settings =
 {
+  plugins =
+  {
+    ["plugin.amazon.iap"] =
+      {
+          -- required
+          publisherId = "com.amazon",
+      },
+  },
 	orientation =
 	{
 		default = "landscapeRight",

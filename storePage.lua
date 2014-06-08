@@ -76,7 +76,7 @@ local function transactionCallback( event )
       end
       loadsave.saveTable(storeSettings, "store.json")
       store.finishTransaction( transaction )
-   elseif tstate == "refunded" then
+   elseif tstate == "refunded" or tstate == "revoked" then
       print("User requested a refund -- locking app back")
       if "com.trigonometry.iap.sine" == product then
         storeSettings.sinePaid = false
@@ -109,15 +109,27 @@ local function purchase( event )
     
     if showing == "sine" then
       print("Purchase Sine")
-      store.purchase({"com.trigonometry.iap.sine"})
+      if system.getInfo("targetAppStore") == "amazon" then
+        store.purchase("com.trigonometry.iap.sine")
+      else
+        store.purchase({"com.trigonometry.iap.sine"})
+      end
       --store.purchase({"android.test.purchased"})
     elseif showing == "speed" then
       print("Purchase Speed")
-      store.purchase({"com.trigonometry.iap.speed"})
+      if system.getInfo("targetAppStore") == "amazon" then
+        store.purchase("com.trigonometry.iap.speed")
+      else
+        store.purchase({"com.trigonometry.iap.speed"})
+      end
       --store.purchase({"android.test.canceled"})
     elseif showing == "bolt" then
       print("Purchase Bolt")
-      store.purchase({"com.trigonometry.iap.bolt"})
+      if system.getInfo("targetAppStore") == "amazon" then
+        store.purchase("com.trigonometry.iap.bolt")
+      else
+        store.purchase({"com.trigonometry.iap.bolt"})
+      end
       --store.purchase({"android.test.item_unavailable"})
     end 
   end
@@ -158,7 +170,10 @@ function scene:create( event )
   if store.availableStores.apple then
       timer.performWithDelay(1000, function() store.init( "apple", transactionCallback); end)
   end
-  if store.availableStores.google then
+  if system.getInfo("targetAppStore") == "amazon" then
+    store = require "plugin.amazon.iap"
+    store.init( transactionCallback )
+  elseif store.availableStores.google then
       timer.performWithDelay( 1000, function() store.init( "google", transactionCallback ); end)
   end
   
