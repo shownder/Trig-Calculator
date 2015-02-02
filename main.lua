@@ -18,9 +18,9 @@ local licensing = require( "licensing" )
 local composer = require( "composer" )
 local analytics = require( "analytics" )
 
-if not device.isApple then
+if ( system.getInfo( "platformName" ) == "Android" ) then
 
-  analytics.init( "H3M2XCWFX8SQS5X8ZKKB" )
+analytics.init( "H3M2XCWFX8SQS5X8ZKKB" )
 
 licensing.init( "google" )
 
@@ -44,14 +44,15 @@ local function licensingListener( event )
    end
 end
 
+licensing.verify( licensingListener )
+end
+
 if device.isApple then
   analytics.init( "C8KDGBFYSTZMZQT2FDVF" )
 end
 
-licensing.verify( licensingListener )
-end
-
 local timesOpen2 = loadsave.loadTable("timesOpen2.json")
+local menuOpened = loadsave.loadTable("menuOpen.json")
 --timesOpen2.opened = 4
 
 if (menuOpened == nil) then
@@ -73,7 +74,7 @@ end
   end
  
 print(system.getInfo("model") .. " " .. system.getInfo("platformVersion"))
-if device.isApple then
+if device.isApple or device.isSimulator then
   composer.gotoScene( "menu")
 end
 

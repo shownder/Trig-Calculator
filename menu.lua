@@ -1,7 +1,6 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
 local widget = require ( "widget" )
-local store = require ("store")
 local loadsave = require("loadsave")
 local myData = require("myData")
 local device = require("device")
@@ -31,6 +30,8 @@ local bought, storeSettings
 local createTable, appleRestore, tableBuy, buyCount
 
 local butTable, labelTable, menuList
+local store
+local v3 = false
 
 local function sceneSelect()
 
@@ -410,6 +411,16 @@ function scene:create( event )
     storeSettings.buyCount = 0
     loadsave.saveTable(storeSettings, "store.json")
   end
+
+  if ( system.getInfo( "platformName" ) == "Android" ) then
+    print("this is google store!")
+    store = require( "plugin.google.iap.v3" )
+    v3 = true
+  elseif ( system.getInfo( "platformName" ) == "iPhone OS" ) then
+    store = require( "store" )
+  else
+    native.showAlert( "Notice", "In-app purchases are not supported in the Corona Simulator.", { "OK" } )
+  end
   
 --  storeSettings.sinePaid = true
 --  storeSettings.speedPaid = true
@@ -460,18 +471,10 @@ function scene:create( event )
     restoreLabel.x = restoreBut.x + 21
     restoreLabel.y = restoreBut.y + 40
     restoreLabel:setFillColor(0.608, 0, 0, 0.6)
-  else 
-    if system.getInfo("targetAppStore") == "amazon" then
-      store = require "plugin.amazon.iap"
-      store.init( transactionCallback )
-      print("The currently logged in user is: ", store.getUserId())
-      store.restore()
+  elseif ( system.getInfo( "platformName" ) == "Android" ) then 
+      timer.performWithDelay( 300, function() store.init( "google", transactionCallback ); end)
+      timer.performWithDelay( 1000, store.restore)
       timer.performWithDelay( 1500, googleRefund)
-    elseif store.availableStores.google then
-      store.init( "google", transactionCallback )
-      timer.performWithDelay( 300, store.restore)
-      timer.performWithDelay( 1500, googleRefund)
-    end
   end
     
   butTable = {}
