@@ -1,7 +1,6 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
 local widget = require ( "widget" )
-local store = require ("store")
 local loadsave = require ("loadsave")
 local myData = require("myData")
 local device = require("device")
@@ -17,6 +16,8 @@ local back, example, descBack, desc, descTitle, descScroll, buttBack, buyBut, ba
 local goBack2, butMove, goBack
 local backEdgeX, backEdgeY
 local showing
+local store
+local v3 = false
 
 ---------------------------------------------------------------------------------
 
@@ -111,24 +112,30 @@ local function purchase( event )
       print("Purchase Sine")
       if system.getInfo("targetAppStore") == "amazon" then
         store.purchase("com.trigonometry.iap.sine")
-      else
+      elseif v3 == false then
         store.purchase({"com.trigonometry.iap.sine"})
+      elseif v3 then
+        store.purchase("com.trigonometry.iap.sine")
       end
       --store.purchase({"android.test.purchased"})
     elseif showing == "speed" then
       print("Purchase Speed")
       if system.getInfo("targetAppStore") == "amazon" then
         store.purchase("com.trigonometry.iap.speed")
-      else
+      elseif v3 == false then
         store.purchase({"com.trigonometry.iap.speed"})
+      elseif v3 then
+        store.purchase("com.trigonometry.iap.speed")
       end
       --store.purchase({"android.test.canceled"})
     elseif showing == "bolt" then
       print("Purchase Bolt")
       if system.getInfo("targetAppStore") == "amazon" then
         store.purchase("com.trigonometry.iap.bolt")
-      else
+      elseif v3 == false then
         store.purchase({"com.trigonometry.iap.bolt"})
+      elseif v3 then
+        store.purchase("com.trigonometry.iap.bolt")
       end
       --store.purchase({"android.test.item_unavailable"})
     end 
@@ -165,17 +172,18 @@ function scene:create( event )
   local sceneGroup = self.view
    
   Runtime:addEventListener( "key", onKeyEvent )
-  
-  storeSettings = loadsave.loadTable("store.json")
-  if store.availableStores.apple then
-      timer.performWithDelay(1000, function() store.init( "apple", transactionCallback); end)
-  end
-  if system.getInfo("targetAppStore") == "amazon" then
-    store = require "plugin.amazon.iap"
-    store.init( transactionCallback )
-  elseif store.availableStores.google then
-      timer.performWithDelay( 1000, function() store.init( "google", transactionCallback ); end)
-  end
+
+storeSettings = loadsave.loadTable("store.json")
+if ( system.getInfo( "platformName" ) == "Android" ) then
+    store = require( "plugin.google.iap.v3" )
+    v3 = true
+    timer.performWithDelay( 1000, function() store.init( "google", transactionCallback ); end)
+elseif ( system.getInfo( "platformName" ) == "iPhone OS" ) then
+    store = require( "store" )
+    timer.performWithDelay(1000, function() store.init( "apple", transactionCallback); end)
+else
+    native.showAlert( "Notice", "In-app purchases are not supported in the Corona Simulator.", { "OK" } )
+end
   
   descGroup = display.newGroup()
   butGroup = display.newGroup()
